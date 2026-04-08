@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎉 앤트축제 코인앱</title>
+  <style>
+    :root {
+      --primary: #6C63FF;
+      --primary-light: #EEF0FF;
+      --secondary: #FF6584;
+      --gold: #F7B731;
+      --green: #26de81;
+      --red: #FC5C65;
+      --bg: #F4F6FC;
+      --card: #FFFFFF;
+      --text: #2D3748;
+      --sub: #718096;
+      --border: #E2E8F0;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(108,99,255,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* === LAYOUT === */
+    .page { display: none; min-height: 100vh; padding-bottom: 80px; }
+    .page.active { display: block; }
+
+    /* === HEADER === */
+    .header { background: var(--primary); color: #fff; padding: 20px 20px 16px; position: sticky; top: 0; z-index: 100; }
+    .header h1 { font-size: 18px; font-weight: 700; }
+    .header .sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+
+    /* === CARD === */
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin: 16px 16px 0; }
+    .card-title { font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* === COIN DISPLAY === */
+    .coin-big { text-align: center; padding: 8px 0; }
+    .coin-big .num { font-size: 56px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .coin-big .label { font-size: 14px; color: var(--sub); margin-top: 4px; }
+    .coin-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); color: var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 700; }
+
+    /* === STAMP === */
+    .stamps-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .stamp { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; border: 2px dashed var(--border); background: #fff; color: #ccc; letter-spacing: -0.5px; }
+    .stamp.filled { border: 2px solid; color: #fff; }
+    .lounge-badge { background: linear-gradient(135deg, #6C63FF, #FF6584); color: #fff; border-radius: 12px; padding: 10px 16px; text-align: center; font-weight: 700; font-size: 14px; margin-top: 12px; }
+
+    /* === BUTTONS === */
+    .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+    .btn:active { opacity: .8; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-secondary { background: var(--primary-light); color: var(--primary); }
+    .btn-danger { background: #fff0f0; color: var(--red); }
+    .btn-gold { background: var(--gold); color: #fff; }
+    .btn-sm { width: auto; padding: 8px 16px; font-size: 13px; border-radius: 8px; }
+
+    /* === INPUT === */
+    input, select { width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; outline: none; transition: border .2s; background: #fff; }
+    input:focus, select:focus { border-color: var(--primary); }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 12px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
+
+    /* === PIN PAD === */
+    .pinpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .pin-btn { background: var(--primary-light); color: var(--primary); border: none; border-radius: 10px; padding: 18px; font-size: 22px; font-weight: 700; cursor: pointer; transition: background .15s; }
+    .pin-btn:active { background: var(--primary); color: #fff; }
+    .pin-btn.del { background: #FFF0F0; color: var(--red); }
+    .pin-display { text-align: center; font-size: 32px; letter-spacing: 12px; padding: 16px; background: var(--bg); border-radius: 10px; min-height: 64px; font-weight: 700; color: var(--text); }
+
+    /* === TABLE === */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: var(--primary-light); color: var(--primary); padding: 8px 10px; text-align: left; font-weight: 700; }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .rank-1 { color: #F7B731; font-weight: 800; }
+    .rank-2 { color: #A0AEC0; font-weight: 700; }
+    .rank-3 { color: #CD7F32; font-weight: 700; }
+
+    /* === BOTTOM NAV === */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border); display: flex; z-index: 200; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0 8px; cursor: pointer; font-size: 10px; color: var(--sub); gap: 3px; border: none; background: none; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item svg { width: 22px; height: 22px; }
+
+    /* === MODAL === */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; animation: slideUp .25s ease; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+    .modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--sub); }
+
+    /* === TOAST === */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #2D3748; color: #fff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; }
+
+    /* === MISC === */
+    .section-title { font-size: 16px; font-weight: 700; padding: 20px 16px 0; }
+    .top3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 16px 0; }
+    .top3-card { background: #fff; border-radius: 14px; padding: 14px 10px; text-align: center; box-shadow: var(--shadow); }
+    .top3-card .medal { font-size: 28px; }
+    .top3-card .name { font-size: 13px; font-weight: 700; margin-top: 4px; }
+    .top3-card .coins { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .empty { text-align: center; color: var(--sub); padding: 30px 0; font-size: 14px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .flex-row { display: flex; align-items: center; gap: 10px; }
+    .flex-row .btn { flex: 1; }
+    .booth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 16px 0; }
+    .booth-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s; }
+    .booth-card:active { transform: scale(.97); }
+    .booth-card .bname { font-size: 14px; font-weight: 700; }
+    .booth-card .btype { font-size: 11px; margin-top: 4px; border-radius: 6px; display: inline-block; padding: 2px 8px; font-weight: 600; }
+    .btype.profit { background: #FFF0F8; color: var(--secondary); }
+    .btype.popular { background: #F0FFF4; color: #22C55E; }
+    .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .chip-red { background: #FFF0F0; color: var(--red); }
+    .chip-green { background: #F0FFF4; color: #22C55E; }
+
+    /* === LANDING === */
+    #page-landing { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; text-align: center; background: linear-gradient(160deg, #6C63FF 0%, #FF6584 100%); }
+    #page-landing h1 { font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    #page-landing p { color: rgba(255,255,255,.8); font-size: 15px; margin-bottom: 48px; }
+    .landing-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; }
+    .landing-btn { padding: 16px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .landing-btn.user { background: #fff; color: var(--primary); }
+    .landing-btn.booth { background: rgba(255,255,255,.2); color: #fff; border: 2px solid rgba(255,255,255,.5); }
+    .landing-btn.admin { background: rgba(0,0,0,.2); color: #fff; border: 2px solid rgba(255,255,255,.3); }
+
+    /* NAME SELECT */
+    #page-user-select { min-height: 100vh; display: none; padding-bottom: 80px; }
+    #page-user-select.active { display: block; }
+    .name-list { padding: 12px 16px; }
+    .name-item { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,.05); cursor: pointer; }
+    .name-item:active { opacity: .8; }
+    .name-item .nm { font-size: 15px; font-weight: 700; }
+    .name-item .team { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== LANDING ==================== -->
+<div id="page-landing" class="page active">
+  <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+  <h1>앤트축제<br/>코인앱</h1>
+  <p>즐거운 축제에 오신 걸 환영해요!</p>
+  <div class="landing-btns">
+    <button class="landing-btn user" onclick="goUserSelect()">👤 참가자 입장</button>
+    <button class="landing-btn booth" onclick="goBoothLogin()">🏪 부스 관리자</button>
+    <button class="landing-btn admin" onclick="goAdminLogin()">⚙️ 총 관리자</button>
+  </div>
+</div>
+
+<!-- ==================== USER SELECT ==================== -->
+<div id="page-user-select" class="page">
+  <div class="header">
+    <h1>👤 참가자 선택</h1>
+    <div class="sub">이름을 검색하거나 선택하세요</div>
+  </div>
+  <div style="padding:12px 16px 0">
+    <input type="text" id="user-search" placeholder="🔍 이름 검색..." oninput="filterNameList(this.value)" style="background:#fff;" />
+  </div>
+  <div class="name-list" id="name-list"></div>
+</div>
+
+<!-- ==================== USER MAIN ==================== -->
+<div id="page-user" class="page">
+  <div class="header">
+    <h1 id="user-header-name">내 축제 지갑</h1>
+    <div class="sub" id="user-header-team"></div>
+  </div>
+
+  <!-- 코인 -->
+  <div class="card">
+    <div class="card-title">💰 보유 코인</div>
+    <div class="coin-big">
+      <div class="num" id="user-coins">0</div>
+      <div class="label">코인</div>
+    </div>
+  </div>
+
+  <!-- 도장 -->
+  <div class="card">
+    <div class="card-title">🔖 도장 현황</div>
+    <div class="stamps-row" id="stamps-row"></div>
+    <div id="lounge-badge" style="display:none" class="lounge-badge">🎊 라운지 입장 가능!</div>
+  </div>
+
+  <!-- 부스 -->
+  <p class="section-title">🏪 부스 결제</p>
+  <div class="booth-grid" id="booth-grid-user"></div>
+
+  <div style="height:20px"></div>
+  <div style="padding:0 16px">
+    <button class="btn btn-secondary" onclick="goLanding()">← 처음으로</button>
+  </div>
+</div>
+
+<!-- ==================== BOOTH LOGIN ==================== -->
+<div id="page-booth-login" class="page">
+  <div class="header"><h1>🏪 부스 관리자 로그인</h1><div class="sub">담당 부스를 선택하세요</div></div>
+  <div class="card">
+    <div class="input-group"><label>부스 선택</label>
+      <select id="booth-select">
+        <option value="">-- 부스를 선택하세요 --</option>
+      </select>
+    </div>
+    <div class="input-group"><label>부스 PIN</label>
+      <input type="password" id="booth-pin-input" placeholder="PIN 입력" maxlength="6" />
+    </div>
+    <button class="btn btn-primary" onclick="boothLogin()">입장하기</button>
+  </div>
+  <div style="padding:16px"><button class="btn btn-secondary" onclick="goLanding()">← 처음으로</button></div>
+</div>
+
+<!-- ==================== BOOTH MAIN ==================== -->
+<div id="page-booth" class="page">
+  <div class="header">
+    <h1 id="booth-header-name">부스 관리</h1>
+    <div class="sub" id="booth-header-type"></div>
+  </div>
+
+  <!-- 통계 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 16px 0">
+    <div class="card" style="margin:0;text-align:center">
+      <div class="card-title">💰 코인 수익</div>
+      <div style="font-size:36px;font-weight:800;color:var(--primary)" id="booth-total-coins">0</div>
+    </div>
+    <div class="card" style="margin:0;text-align:center">
+      <div class="card-title">👥 참여 인원</div>
+      <div style="font-size:36px;font-weight:800;color:var(--secondary)" id="booth-total-visitors">0</div>
+    </div>
+  </div>
+
+  <!-- 결제 내역 + 취소 -->
+  <div class="card">
+    <div class="card-title">📋 결제 내역 / 취소</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>이름</th><th>차감</th><th>시간</th><th>취소</th></tr></thead>
+        <tbody id="booth-history"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="padding:16px"><button class="btn btn-secondary" onclick="goLanding()">← 처음으로</button></div>
+</div>
+
+<!-- ==================== ADMIN LOGIN ==================== -->
+<div id="page-admin-login" class="page">
+  <div class="header"><h1>⚙️ 관리자 로그인</h1></div>
+  <div class="card">
+    <div class="input-group"><label>관리자 비밀번호</label>
+      <input type="password" id="admin-pw-input" placeholder="비밀번호 입력" />
+    </div>
+    <button class="btn btn-primary" onclick="adminLogin()">로그인</button>
+  </div>
+  <div style="padding:16px"><button class="btn btn-secondary" onclick="goLanding()">← 처음으로</button></div>
+</div>
+
+<!-- ==================== ADMIN MAIN ==================== -->
+<div id="page-admin" class="page">
+  <div class="header"><h1>⚙️ 관리자 대시보드</h1><div class="sub" id="admin-last-updated"></div></div>
+
+  <!-- 탭 -->
+  <div style="display:flex;gap:0;padding:12px 16px 0;overflow-x:auto">
+    <button class="btn btn-sm" id="atab-people" onclick="adminTab('people')" style="border-radius:8px 0 0 8px;background:var(--primary);color:#fff">👥 인원</button>
+    <button class="btn btn-sm" id="atab-rank" onclick="adminTab('rank')" style="border-radius:0;background:var(--primary-light);color:var(--primary)">🏆 순위</button>
+    <button class="btn btn-sm" id="atab-booth" onclick="adminTab('booth')" style="border-radius:0;background:var(--primary-light);color:var(--primary)">🏪 부스</button>
+    <button class="btn btn-sm" id="atab-manage" onclick="adminTab('manage')" style="border-radius:0 8px 8px 0;background:var(--primary-light);color:var(--primary)">🔧 관리</button>
+  </div>
+
+  <!-- 탭: 인원 -->
+  <div id="admin-tab-people">
+    <div class="card">
+      <div class="card-title">👥 전체 참가자 현황</div>
+      <div style="margin-bottom:10px;display:flex;gap:8px">
+        <span class="chip chip-green" id="admin-lounge-count">라운지 입장 0명</span>
+        <span class="chip chip-red" id="admin-not-lounge-count">미충족 0명</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>이름</th><th>팀</th><th>코인</th><th>도장</th><th>라운지</th><th>편집</th></tr></thead>
+          <tbody id="admin-people-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭: 순위 -->
+  <div id="admin-tab-rank" style="display:none">
+    <p class="section-title" style="padding-top:16px">🏆 실시간 도장 TOP 3</p>
+    <div class="top3" id="admin-top3"></div>
+    <div class="card">
+      <div class="card-title">📊 전체 순위</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>순위</th><th>이름</th><th>팀</th><th>도장</th><th>코인</th></tr></thead>
+          <tbody id="admin-rank-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭: 부스 -->
+  <div id="admin-tab-booth" style="display:none">
+
+    <!-- 방문자 TOP 2 (전체) -->
+    <p class="section-title" style="padding-top:16px">⭐ 인기 TOP — 방문자 많은 순 (전체)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0" id="booth-popular-top"></div>
+
+    <!-- 코인 수익 TOP 2 (전체) -->
+    <p class="section-title" style="padding-top:16px">💸 수익 TOP — 코인 많이 번 순 (전체)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0" id="booth-profit-top"></div>
+
+    <!-- 전체 목록 -->
+    <div class="card">
+      <div class="card-title">🏪 전체 부스 현황</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>부스</th><th>타입</th><th>코인</th><th>인원</th><th>편집</th></tr></thead>
+          <tbody id="admin-booth-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 참가자 편집 모달 -->
+  <div class="modal-overlay" id="modal-user-edit">
+    <div class="modal">
+      <div class="modal-title">
+        <button class="modal-close" onclick="closeModal('modal-user-edit')">✕</button>
+        👤 참가자 편집
+      </div>
+      <input type="hidden" id="edit-user-id" />
+      <div class="input-group"><label>이름</label><input type="text" id="edit-user-name" /></div>
+      <div class="input-group"><label>팀명</label><input type="text" id="edit-user-team" /></div>
+      <div class="input-group"><label>코인</label><input type="number" id="edit-user-coins" min="0" /></div>
+      <div class="input-group"><label>도장 수</label><input type="number" id="edit-user-stamps" min="0" /></div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2" onclick="saveUserEdit()">저장</button>
+        <button class="btn btn-danger" style="flex:1" onclick="deleteUser()">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 부스 편집 모달 -->
+  <div class="modal-overlay" id="modal-booth-edit">
+    <div class="modal">
+      <div class="modal-title">
+        <button class="modal-close" onclick="closeModal('modal-booth-edit')">✕</button>
+        🏪 부스 편집
+      </div>
+      <input type="hidden" id="edit-booth-id" />
+      <div class="input-group"><label>부스 이름</label><input type="text" id="edit-booth-name" /></div>
+      <div class="input-group"><label>부스 타입</label>
+        <select id="edit-booth-type">
+          <option value="profit">수익형 (2코인 차감)</option>
+          <option value="popular">인기형 (1코인 차감)</option>
+        </select>
+      </div>
+      <div class="input-group"><label>부스 PIN</label><input type="text" id="edit-booth-pin" maxlength="6" /></div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveBoothEdit()">저장</button>
+        <button class="btn btn-danger" style="flex:1" onclick="deleteBooth()">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭: 관리 -->
+  <div id="admin-tab-manage" style="display:none">
+
+    <!-- 코인 지급 -->
+    <div class="card">
+      <div class="card-title">🏪 인사매점 코인 지급</div>
+      <div class="input-group"><label>참가자 검색</label>
+        <input type="text" id="admin-coin-search" placeholder="🔍 이름 검색..." oninput="filterCoinSearch(this.value)" autocomplete="off" />
+        <div id="admin-coin-results" style="margin-top:6px;display:none;border:2px solid var(--primary);border-radius:10px;overflow:hidden;background:#fff;max-height:200px;overflow-y:auto;"></div>
+        <input type="hidden" id="admin-coin-user" />
+        <div id="admin-coin-selected" style="display:none;margin-top:8px;padding:10px 14px;background:var(--primary-light);border-radius:10px;font-size:14px;font-weight:700;color:var(--primary);display:flex;align-items:center;justify-content:space-between;"></div>
+      </div>
+      <div class="input-group"><label>지급 코인 수</label>
+        <input type="number" id="admin-coin-amount" placeholder="예: 5" min="1" />
+      </div>
+      <button class="btn btn-gold" onclick="adminAddCoin()">💰 코인 지급</button>
+    </div>
+
+    <!-- 직원 등록 -->
+    <div class="card">
+      <div class="card-title">➕ 참가자 등록</div>
+      <div class="input-group"><label>이름</label><input type="text" id="admin-new-name" placeholder="홍길동" /></div>
+      <div class="input-group"><label>팀명</label><input type="text" id="admin-new-team" placeholder="웹툰 1팀" /></div>
+      <div class="input-group"><label>초기 코인</label>
+        <select id="admin-new-coins">
+          <option value="20">1등 팀 — 20코인</option>
+          <option value="15">2등 팀 — 15코인</option>
+          <option value="10">3등 팀 — 10코인</option>
+          <option value="8">4등 팀 — 8코인</option>
+          <option value="6">5등 팀 — 6코인</option>
+          <option value="5" selected>6등 팀 — 5코인 (기본)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="adminAddUser()">등록</button>
+    </div>
+
+    <!-- 팀 일괄 등록 -->
+    <div class="card">
+      <div class="card-title">👥 팀 일괄 등록</div>
+      <div class="input-group"><label>팀명</label><input type="text" id="admin-batch-team" placeholder="웹툰 1팀" /></div>
+      <div class="input-group"><label>이름 (쉼표로 구분)</label><input type="text" id="admin-batch-names" placeholder="홍길동, 김철수, 이영희" /></div>
+      <div class="input-group"><label>코인</label>
+        <select id="admin-batch-coins">
+          <option value="20">1등 팀 — 20코인</option>
+          <option value="15">2등 팀 — 15코인</option>
+          <option value="10">3등 팀 — 10코인</option>
+          <option value="8">4등 팀 — 8코인</option>
+          <option value="6">5등 팀 — 6코인</option>
+          <option value="5" selected>6등 팀 — 5코인</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="adminBatchAddUsers()">일괄 등록</button>
+    </div>
+
+    <!-- 부스 등록 -->
+    <div class="card">
+      <div class="card-title">🏪 부스 등록</div>
+      <div class="input-group"><label>부스 이름</label><input type="text" id="admin-booth-name" placeholder="달고나 부스" /></div>
+      <div class="input-group"><label>부스 타입</label>
+        <select id="admin-booth-type">
+          <option value="profit">수익형 (2코인 차감)</option>
+          <option value="popular">인기형 (1코인 차감)</option>
+        </select>
+      </div>
+      <div class="input-group"><label>부스 PIN (4~6자리)</label><input type="text" id="admin-booth-pin" placeholder="1234" maxlength="6" /></div>
+      <button class="btn btn-primary" onclick="adminAddBooth()">부스 등록</button>
+    </div>
+
+    <!-- 데이터 초기화 -->
+    <div class="card">
+      <div class="card-title">⚠️ 데이터 관리</div>
+      <button class="btn btn-danger" onclick="adminResetAll()">🗑️ 전체 초기화 (주의!)</button>
+    </div>
+
+    <div style="padding:16px"><button class="btn btn-secondary" onclick="goLanding()">← 처음으로</button></div>
+  </div>
+</div>
+
+<!-- ==================== PAYMENT MODAL ==================== -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-title">
+      <button class="modal-close" onclick="closeModal('modal-payment')">✕</button>
+      💳 <span id="modal-booth-name">부스 결제</span>
+    </div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--sub)">차감 코인</div>
+      <div style="font-size:40px;font-weight:900;color:var(--primary)" id="modal-deduct">-2</div>
+      <div style="font-size:13px;color:var(--sub)" id="modal-user-coins-info"></div>
+    </div>
+    <div class="pin-display" id="pin-display">●●●●</div>
+    <div class="pinpad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn del" onclick="pinClear()">✕</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" style="background:var(--primary);color:#fff" onclick="pinConfirm()">✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+
+const ADMIN_PASSWORD = 'ant2024'; // 관리자 비밀번호 (변경 가능)
+
+// ★ Apps Script 배포 후 URL을 여기에 입력하세요
+const PROXY_URL = 'https://script.google.com/macros/s/AKfycbz4rQ9IHiEwidG0ES10ePw0nbi6uDu0TDFthqOMQsvvcC0N8RnSVZnStRI-P7uqSM_R-w/exec';
+
+// ============================================================
+//  DATA STORE  (localStorage 캐시 + Notion 동기화)
+// ============================================================
+
+const DB = {
+  get users()   { return JSON.parse(localStorage.getItem('fc_users')   || '[]'); },
+  set users(v)  { localStorage.setItem('fc_users',   JSON.stringify(v)); },
+  get booths()  { return JSON.parse(localStorage.getItem('fc_booths')  || '[]'); },
+  set booths(v) { localStorage.setItem('fc_booths',  JSON.stringify(v)); },
+  get history() { return JSON.parse(localStorage.getItem('fc_history') || '[]'); },
+  set history(v){ localStorage.setItem('fc_history', JSON.stringify(v)); },
+};
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function now()   { return new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'}); }
+
+// ============================================================
+//  NOTION PROXY API
+// ============================================================
+
+async function proxyCall(action, extra = {}) {
+  if (!PROXY_URL) return null;
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...extra }),
+    });
+    return await res.json();
+  } catch(e) { console.warn('Proxy call failed', e); return null; }
+}
+
+// Notion → 로컬 동기화 (앱 시작 시 & 주기적으로)
+async function syncFromNotion() {
+  if (!PROXY_URL) return;
+  showSyncIndicator(true);
+  try {
+    const [uRes, bRes, hRes] = await Promise.all([
+      proxyCall('getUsers'),
+      proxyCall('getBooths'),
+      proxyCall('getHistory'),
+    ]);
+
+    if (uRes?.results) {
+      DB.users = uRes.results.map(r => ({
+        id: r._pageId, name: r.Name || '', team: r.Team || '',
+        coins: r.Coins || 0, stamps: r.Stamps || 0,
+      }));
+    }
+    if (bRes?.results) {
+      DB.booths = bRes.results.map(r => ({
+        id: r._pageId, name: r.Name || '', type: r.Type || 'popular',
+        pin: r.PIN || '', totalCoins: r.TotalCoins || 0, visitors: r.Visitors || 0,
+      }));
+    }
+    if (hRes?.results) {
+      DB.history = hRes.results.map(r => ({
+        id: r._pageId, userId: r.UserId, userName: r.UserName,
+        boothId: r.BoothId, boothName: r.BoothName,
+        deduct: r.Deduct || 0, stampAdd: r.StampAdd || 1, time: r.Time || '',
+      })).sort((a,b) => b.id.localeCompare(a.id));
+    }
+  } catch(e) { console.warn('Sync failed', e); }
+  showSyncIndicator(false);
+}
+
+function showSyncIndicator(on) {
+  let el = document.getElementById('sync-indicator');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sync-indicator';
+    el.style.cssText = 'position:fixed;top:10px;right:12px;z-index:500;font-size:11px;background:rgba(108,99,255,.15);color:#6C63FF;padding:4px 10px;border-radius:20px;font-weight:700;display:none';
+    document.body.appendChild(el);
+  }
+  el.textContent = '🔄 동기화 중...';
+  el.style.display = on ? 'block' : 'none';
+}
+
+// Notion에 유저 생성
+async function notionCreateUser(u) {
+  await proxyCall('createUser', { props: { Name: u.name, Team: u.team, Coins: u.coins, Stamps: u.stamps || 0 } });
+}
+
+// Notion 유저 업데이트
+async function notionUpdateUser(u) {
+  await proxyCall('updateUser', { pageId: u.id, props: { Coins: u.coins, Stamps: u.stamps || 0 } });
+}
+
+// Notion에 부스 생성
+async function notionCreateBooth(b) {
+  await proxyCall('createBooth', { props: { Name: b.name, Type: b.type, PIN: b.pin, TotalCoins: 0, Visitors: 0 } });
+}
+
+// Notion 부스 업데이트
+async function notionUpdateBooth(b) {
+  await proxyCall('updateBooth', { pageId: b.id, props: { Name: b.name, Type: b.type, PIN: b.pin, TotalCoins: b.totalCoins || 0, Visitors: b.visitors || 0 } });
+}
+
+// Notion에 결제내역 생성
+async function notionCreateHistory(h) {
+  await proxyCall('createHistory', { props: {
+    Name: h.userName + ' → ' + h.boothName,
+    UserId: h.userId, UserName: h.userName,
+    BoothId: h.boothId, BoothName: h.boothName,
+    Deduct: h.deduct, StampAdd: h.stampAdd || 1, Time: h.time,
+  }});
+}
+
+// Notion 결제내역 삭제
+async function notionDeleteHistory(pageId) {
+  await proxyCall('deletePage', { pageId });
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+let currentUser = null;
+let currentBooth = null;
+let currentPin = '';
+let payingBoothId = null;
+let currentAdminTab = 'people';
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goLanding() { currentUser = null; currentBooth = null; showPage('page-landing'); }
+
+function goUserSelect() {
+  const searchEl = document.getElementById('user-search');
+  if (searchEl) searchEl.value = '';
+  renderNameList();
+  showPage('page-user-select');
+  setTimeout(() => { if (searchEl) searchEl.focus(); }, 100);
+}
+
+function goBoothLogin() {
+  const sel = document.getElementById('booth-select');
+  sel.innerHTML = '<option value="">-- 부스를 선택하세요 --</option>';
+  DB.booths.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b.id; o.textContent = `${b.name} (${b.type === 'profit' ? '수익형' : '인기형'})`;
+    sel.appendChild(o);
+  });
+  showPage('page-booth-login');
+}
+
+function goAdminLogin() { showPage('page-admin-login'); }
+
+// ============================================================
+//  USER SELECT
+// ============================================================
+function renderNameList(filter = '') {
+  const ul = document.getElementById('name-list');
+  const users = DB.users;
+  if (!users.length) {
+    ul.innerHTML = '<div class="empty">등록된 참가자가 없어요.<br/>관리자에게 문의하세요.</div>';
+    return;
+  }
+  const filtered = filter
+    ? users.filter(u => u.name.includes(filter) || u.team.includes(filter))
+    : users;
+  if (!filtered.length) {
+    ul.innerHTML = '<div class="empty">검색 결과가 없어요</div>';
+    return;
+  }
+  ul.innerHTML = filtered.map(u => `
+    <div class="name-item" onclick="selectUser('${u.id}')">
+      <div>
+        <div class="nm">${u.name}</div>
+        <div class="team">${u.team}</div>
+      </div>
+      <div class="coin-badge">🪙 ${u.coins}</div>
+    </div>
+  `).join('');
+}
+
+function filterNameList(val) {
+  renderNameList(val.trim());
+}
+
+function selectUser(uid) {
+  const u = DB.users.find(x => x.id === uid);
+  if (!u) return;
+  currentUser = u;
+  renderUserPage();
+  showPage('page-user');
+}
+
+// ============================================================
+//  USER PAGE
+// ============================================================
+function renderUserPage() {
+  const u = DB.users.find(x => x.id === currentUser.id);
+  if (!u) return;
+  currentUser = u;
+
+  document.getElementById('user-header-name').textContent = u.name + '님의 지갑';
+  document.getElementById('user-header-team').textContent = u.team;
+  document.getElementById('user-coins').textContent = u.coins;
+
+  // 도장 — 결제내역 기반으로 부스별 색상 + 이름 두 글자
+  const stampEl = document.getElementById('stamps-row');
+  const total = u.stamps || 0;
+  // 이 유저의 결제 내역(시간순)
+  const userHist = DB.history.filter(h => h.userId === u.id).slice().reverse();
+  // 도장 배열 생성: 수익형은 2개, 인기형은 1개
+  const stampList = [];
+  userHist.forEach(h => {
+    const cnt = h.stampAdd || 1;
+    for (let k = 0; k < cnt; k++) stampList.push(h);
+  });
+  const slots = Math.max(stampList.length, 10);
+  const boothColors = getBoothColors();
+  let html = '';
+  for (let i = 0; i < slots; i++) {
+    if (i < stampList.length) {
+      const h = stampList[i];
+      const col = boothColors[h.boothId] || { bg: '#6C63FF', text: '#fff' };
+      const label = h.boothName ? h.boothName.slice(0,2) : '부스';
+      html += `<div class="stamp filled" style="background:${col.bg};border-color:${col.bg};color:${col.text}">${label}</div>`;
+    } else {
+      html += `<div class="stamp">빈칸</div>`;
+    }
+  }
+  html += `<div style="font-size:13px;color:var(--sub);align-self:center;margin-left:4px">${total}개</div>`;
+  stampEl.innerHTML = html;
+
+  const lb = document.getElementById('lounge-badge');
+  lb.style.display = (u.stamps >= 3) ? 'block' : 'none';
+
+  // 부스 그리드
+  const grid = document.getElementById('booth-grid-user');
+  const booths = DB.booths;
+  if (!booths.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:span 2">등록된 부스가 없어요</div>';
+  } else {
+    const userCoins = currentUser ? (DB.users.find(x => x.id === currentUser.id)?.coins || 0) : 0;
+    grid.innerHTML = booths.map(b => {
+      const deduct = b.type === 'profit' ? 2 : 1;
+      const canAfford = userCoins >= deduct;
+      return `
+        <div class="booth-card" onclick="${canAfford ? `openPaymentModal('${b.id}')` : `showToast('코인이 부족해요! 🪙')`}"
+          style="${canAfford ? '' : 'opacity:0.35;filter:grayscale(60%);cursor:not-allowed;'}">
+          <div class="bname">${b.name}</div>
+          <div class="btype ${b.type}">${b.type === 'profit' ? '💸 수익형' : '⭐ 인기형'}</div>
+          <div style="font-size:20px;font-weight:800;color:var(--primary);margin-top:8px">${deduct}코인</div>
+          ${!canAfford ? '<div style="font-size:11px;color:var(--red);margin-top:4px;font-weight:700">코인 부족</div>' : ''}
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+// ============================================================
+//  PAYMENT MODAL (개인용)
+// ============================================================
+function openPaymentModal(boothId) {
+  const b = DB.booths.find(x => x.id === boothId);
+  if (!b) return;
+  payingBoothId = boothId;
+  currentPin = '';
+  const deduct = b.type === 'profit' ? 2 : 1;
+  document.getElementById('modal-booth-name').textContent = b.name;
+  document.getElementById('modal-deduct').textContent = `-${deduct} 코인`;
+  document.getElementById('modal-user-coins-info').textContent = `현재 보유: ${currentUser.coins} 코인`;
+  document.getElementById('pin-display').textContent = '';
+  document.getElementById('modal-payment').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  currentPin = '';
+  payingBoothId = null;
+}
+
+function pinPress(d) {
+  if (currentPin.length >= 6) return;
+  currentPin += d;
+  document.getElementById('pin-display').textContent = '●'.repeat(currentPin.length);
+}
+
+function pinClear() {
+  currentPin = '';
+  document.getElementById('pin-display').textContent = '';
+}
+
+function pinConfirm() {
+  const b = DB.booths.find(x => x.id === payingBoothId);
+  if (!b) return;
+  if (currentPin !== b.pin) { showToast('PIN 번호가 틀렸어요!'); pinClear(); return; }
+
+  const deduct = b.type === 'profit' ? 2 : 1;
+  const users = DB.users;
+  const idx = users.findIndex(x => x.id === currentUser.id);
+  if (idx === -1) return;
+
+  if (users[idx].coins < deduct) { showToast('코인이 부족해요!'); return; }
+
+  const stampAdd = b.type === 'profit' ? 2 : 1;
+  users[idx].coins -= deduct;
+  users[idx].stamps = (users[idx].stamps || 0) + stampAdd;
+  DB.users = users;
+
+  // 부스 업데이트
+  const booths = DB.booths;
+  const bi = booths.findIndex(x => x.id === payingBoothId);
+  if (bi !== -1) {
+    booths[bi].totalCoins = (booths[bi].totalCoins || 0) + deduct;
+    booths[bi].visitors = (booths[bi].visitors || 0) + 1;
+    DB.booths = booths;
+  }
+
+  // 결제 내역
+  const newHist = { id: genId(), userId: currentUser.id, userName: users[idx].name, boothId: b.id, boothName: b.name, deduct, stampAdd, time: now() };
+  const hist = DB.history;
+  hist.unshift(newHist);
+  DB.history = hist;
+
+  // Notion 동기화 (비동기 백그라운드)
+  notionUpdateUser(users[idx]);
+  if (bi !== -1) notionUpdateBooth(booths[bi]);
+  notionCreateHistory(newHist);
+
+  closeModal('modal-payment');
+  showToast(`✅ ${deduct}코인 차감! 도장 ${stampAdd}개 찍혔어요 🔖`);
+  renderUserPage();
+}
+
+// ============================================================
+//  BOOTH LOGIN / PAGE
+// ============================================================
+function boothLogin() {
+  const bid = document.getElementById('booth-select').value;
+  const pin = document.getElementById('booth-pin-input').value;
+  if (!bid) { showToast('부스를 선택하세요'); return; }
+  const b = DB.booths.find(x => x.id === bid);
+  if (!b) { showToast('부스 정보 없음'); return; }
+  if (pin !== b.pin) { showToast('PIN 번호가 틀렸어요!'); return; }
+  currentBooth = b;
+  renderBoothPage();
+  showPage('page-booth');
+}
+
+function renderBoothPage() {
+  const b = DB.booths.find(x => x.id === currentBooth.id);
+  if (!b) return;
+  currentBooth = b;
+
+  document.getElementById('booth-header-name').textContent = '🏪 ' + b.name;
+  document.getElementById('booth-header-type').textContent = b.type === 'profit' ? '수익형 — 2코인 차감' : '인기형 — 1코인 차감';
+  document.getElementById('booth-total-coins').textContent = b.totalCoins || 0;
+  document.getElementById('booth-total-visitors').textContent = b.visitors || 0;
+
+  // 결제 내역 + 취소 버튼
+  const hist = DB.history.filter(h => h.boothId === currentBooth.id).slice(0, 30);
+  document.getElementById('booth-history').innerHTML = hist.length
+    ? hist.map(h => `
+        <tr>
+          <td>${h.userName}</td>
+          <td>-${h.deduct}</td>
+          <td>${h.time}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="cancelPayment('${h.id}')">취소</button></td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" class="empty">결제 내역 없음</td></tr>';
+}
+
+function cancelPayment(histId) {
+  if (!confirm('결제를 취소할까요? 코인과 도장이 복구됩니다.')) return;
+
+  const hist = DB.history;
+  const hi = hist.findIndex(x => x.id === histId);
+  if (hi === -1) { showToast('내역을 찾을 수 없어요'); return; }
+  const h = hist[hi];
+
+  // 유저 코인/도장 복구
+  const users = DB.users;
+  const ui = users.findIndex(x => x.id === h.userId);
+  if (ui !== -1) {
+    users[ui].coins += h.deduct;
+    users[ui].stamps = Math.max((users[ui].stamps || 0) - (h.stampAdd || 1), 0);
+    DB.users = users;
+    notionUpdateUser(users[ui]);
+  }
+
+  // 부스 통계 복구
+  const booths = DB.booths;
+  const bi = booths.findIndex(x => x.id === h.boothId);
+  if (bi !== -1) {
+    booths[bi].totalCoins = Math.max((booths[bi].totalCoins || 0) - h.deduct, 0);
+    booths[bi].visitors   = Math.max((booths[bi].visitors   || 0) - 1, 0);
+    DB.booths = booths;
+    notionUpdateBooth(booths[bi]);
+  }
+
+  // 내역 삭제
+  const deletedId = h.id;
+  hist.splice(hi, 1);
+  DB.history = hist;
+  notionDeleteHistory(deletedId);
+
+  showToast(`↩️ ${h.userName}님 결제 취소 완료`);
+  renderBoothPage();
+}
+
+// ============================================================
+//  ADMIN
+// ============================================================
+function adminLogin() {
+  const pw = document.getElementById('admin-pw-input').value;
+  if (pw !== ADMIN_PASSWORD) { showToast('비밀번호가 틀렸어요!'); return; }
+  document.getElementById('admin-pw-input').value = '';
+  renderAdminPage();
+  showPage('page-admin');
+}
+
+function adminTab(tab) {
+  currentAdminTab = tab;
+  ['people','rank','booth','manage'].forEach(t => {
+    document.getElementById(`admin-tab-${t}`).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById(`atab-${t}`);
+    btn.style.background = t === tab ? 'var(--primary)' : 'var(--primary-light)';
+    btn.style.color = t === tab ? '#fff' : 'var(--primary)';
+  });
+  if (tab === 'people') renderAdminPeople();
+  if (tab === 'rank')   renderAdminRank();
+  if (tab === 'booth')  renderAdminBooth();
+  if (tab === 'manage') renderAdminManage();
+}
+
+function renderAdminPage() {
+  document.getElementById('admin-last-updated').textContent = '업데이트: ' + now();
+  adminTab(currentAdminTab);
+}
+
+function renderAdminPeople() {
+  const users = DB.users;
+  const loungeOk = users.filter(u => (u.stamps||0) >= 3).length;
+  document.getElementById('admin-lounge-count').textContent = `라운지 입장 ${loungeOk}명`;
+  document.getElementById('admin-not-lounge-count').textContent = `미충족 ${users.length - loungeOk}명`;
+
+  document.getElementById('admin-people-table').innerHTML = users.length
+    ? users.map(u => `
+        <tr>
+          <td>${u.name}</td>
+          <td>${u.team}</td>
+          <td>🪙${u.coins}</td>
+          <td>🔖${u.stamps||0}</td>
+          <td>${(u.stamps||0)>=3 ? '<span class="chip chip-green">✓</span>' : '<span class="chip chip-red">✗</span>'}</td>
+          <td><button class="btn btn-sm btn-secondary" onclick="openUserEdit('${u.id}')">편집</button></td>
+        </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">참가자 없음</td></tr>';
+}
+
+function renderAdminRank() {
+  const sorted = [...DB.users].sort((a,b) => (b.stamps||0) - (a.stamps||0));
+  const medals = ['🥇','🥈','🥉'];
+  const rankClass = ['rank-1','rank-2','rank-3'];
+
+  document.getElementById('admin-top3').innerHTML = sorted.slice(0,3).map((u,i) => `
+    <div class="top3-card">
+      <div class="medal">${medals[i]||''}</div>
+      <div class="name">${u.name}</div>
+      <div style="font-size:11px;color:var(--sub)">${u.team}</div>
+      <div class="coins">🔖${u.stamps||0}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('admin-rank-table').innerHTML = sorted.length
+    ? sorted.map((u,i) => `
+        <tr>
+          <td class="${rankClass[i]||''}">${i+1}</td>
+          <td>${u.name}</td>
+          <td>${u.team}</td>
+          <td>🔖${u.stamps||0}</td>
+          <td>🪙${u.coins}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="5" class="empty">데이터 없음</td></tr>';
+}
+
+function renderAdminBooth() {
+  const booths = DB.booths;
+
+  // 방문자 TOP 2 — 전체 부스 합산
+  const popularSorted = [...booths].sort((a,b) => (b.visitors||0) - (a.visitors||0));
+  const popularMedals = ['🥇','🥈'];
+  document.getElementById('booth-popular-top').innerHTML = popularSorted.length
+    ? popularSorted.slice(0,2).map((b,i) => `
+        <div class="top3-card">
+          <div class="medal">${popularMedals[i]}</div>
+          <div class="name" style="font-size:14px">${b.name}</div>
+          <div style="font-size:11px;margin-top:2px"><span class="btype ${b.type}" style="font-size:10px">${b.type==='profit'?'수익형':'인기형'}</span></div>
+          <div style="font-size:22px;font-weight:800;color:var(--secondary);margin-top:4px">👥 ${b.visitors||0}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">방문자</div>
+        </div>`).join('')
+    : '<div style="grid-column:span 2" class="empty">부스 없음</div>';
+
+  // 코인 수익 TOP 2 — 전체 부스 합산
+  const profitSorted = [...booths].sort((a,b) => (b.totalCoins||0) - (a.totalCoins||0));
+  const profitMedals = ['🥇','🥈'];
+  document.getElementById('booth-profit-top').innerHTML = profitSorted.length
+    ? profitSorted.slice(0,2).map((b,i) => `
+        <div class="top3-card">
+          <div class="medal">${profitMedals[i]}</div>
+          <div class="name" style="font-size:14px">${b.name}</div>
+          <div style="font-size:11px;margin-top:2px"><span class="btype ${b.type}" style="font-size:10px">${b.type==='profit'?'수익형':'인기형'}</span></div>
+          <div style="font-size:22px;font-weight:800;color:var(--primary);margin-top:4px">🪙 ${b.totalCoins||0}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">코인 수익</div>
+        </div>`).join('')
+    : '<div style="grid-column:span 2" class="empty">부스 없음</div>';
+
+  // 전체 목록
+  document.getElementById('admin-booth-table').innerHTML = booths.length
+    ? booths.map(b => `
+        <tr>
+          <td>${b.name}</td>
+          <td><span class="btype ${b.type}">${b.type==='profit'?'수익형':'인기형'}</span></td>
+          <td>🪙${b.totalCoins||0}</td>
+          <td>👥${b.visitors||0}</td>
+          <td><button class="btn btn-sm btn-secondary" onclick="openBoothEdit('${b.id}')">편집</button></td>
+        </tr>`).join('')
+    : '<tr><td colspan="5" class="empty">부스 없음</td></tr>';
+}
+
+function renderAdminManage() {
+  // 검색창 초기화
+  document.getElementById('admin-coin-search').value = '';
+  document.getElementById('admin-coin-user').value = '';
+  document.getElementById('admin-coin-results').style.display = 'none';
+  document.getElementById('admin-coin-selected').style.display = 'none';
+}
+
+function filterCoinSearch(val) {
+  const results = document.getElementById('admin-coin-results');
+  const q = val.trim();
+  if (!q) { results.style.display = 'none'; return; }
+  const matched = DB.users.filter(u => u.name.includes(q) || u.team.includes(q));
+  if (!matched.length) {
+    results.innerHTML = '<div style="padding:12px;color:var(--sub);font-size:13px;text-align:center">검색 결과 없음</div>';
+    results.style.display = 'block';
+    return;
+  }
+  results.innerHTML = matched.map(u => `
+    <div onclick="selectCoinUser('${u.id}')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:14px;display:flex;justify-content:space-between;align-items:center;"
+      onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='#fff'">
+      <span><b>${u.name}</b> <span style="color:var(--sub);font-size:12px">${u.team}</span></span>
+      <span class="coin-badge">🪙 ${u.coins}</span>
+    </div>
+  `).join('');
+  results.style.display = 'block';
+}
+
+function selectCoinUser(uid) {
+  const u = DB.users.find(x => x.id === uid);
+  if (!u) return;
+  document.getElementById('admin-coin-user').value = uid;
+  document.getElementById('admin-coin-search').value = '';
+  document.getElementById('admin-coin-results').style.display = 'none';
+  const sel = document.getElementById('admin-coin-selected');
+  sel.style.display = 'flex';
+  sel.innerHTML = `<span>✅ ${u.name} <span style="font-weight:400;font-size:12px">(${u.team}) — 🪙${u.coins}</span></span><button onclick="clearCoinUser()" style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:16px">✕</button>`;
+}
+
+function clearCoinUser() {
+  document.getElementById('admin-coin-user').value = '';
+  document.getElementById('admin-coin-selected').style.display = 'none';
+  document.getElementById('admin-coin-search').value = '';
+  document.getElementById('admin-coin-search').focus();
+}
+
+function adminAddCoin() {
+  const uid = document.getElementById('admin-coin-user').value;
+  const amt = parseInt(document.getElementById('admin-coin-amount').value);
+  if (!uid || isNaN(amt) || amt < 1) { showToast('참가자를 선택하고 코인 수를 입력하세요'); return; }
+  const users = DB.users;
+  const idx = users.findIndex(x => x.id === uid);
+  if (idx === -1) return;
+  users[idx].coins += amt;
+  DB.users = users;
+  document.getElementById('admin-coin-amount').value = '';
+  showToast(`✅ ${users[idx].name}님에게 ${amt}코인 지급!`);
+  clearCoinUser();
+}
+
+function adminAddUser() {
+  const name  = document.getElementById('admin-new-name').value.trim();
+  const team  = document.getElementById('admin-new-team').value.trim();
+  const coins = parseInt(document.getElementById('admin-new-coins').value);
+  if (!name || !team) { showToast('이름과 팀명을 입력하세요'); return; }
+  const newUser = { id: genId(), name, team, coins, stamps: 0 };
+  const users = DB.users;
+  users.push(newUser);
+  DB.users = users;
+  notionCreateUser(newUser);
+  document.getElementById('admin-new-name').value = '';
+  document.getElementById('admin-new-team').value = '';
+  showToast(`✅ ${name}님 등록 완료!`);
+}
+
+function adminBatchAddUsers() {
+  const team  = document.getElementById('admin-batch-team').value.trim();
+  const names = document.getElementById('admin-batch-names').value.split(',').map(n => n.trim()).filter(Boolean);
+  const coins = parseInt(document.getElementById('admin-batch-coins').value);
+  if (!team || !names.length) { showToast('팀명과 이름을 입력하세요'); return; }
+  const users = DB.users;
+  const newUsers = names.map(name => ({ id: genId(), name, team, coins, stamps: 0 }));
+  newUsers.forEach(u => { users.push(u); notionCreateUser(u); });
+  DB.users = users;
+  document.getElementById('admin-batch-team').value = '';
+  document.getElementById('admin-batch-names').value = '';
+  showToast(`✅ ${names.length}명 일괄 등록 완료!`);
+}
+
+function adminAddBooth() {
+  const name = document.getElementById('admin-booth-name').value.trim();
+  const type = document.getElementById('admin-booth-type').value;
+  const pin  = document.getElementById('admin-booth-pin').value.trim();
+  if (!name || !pin || pin.length < 4) { showToast('부스 이름과 PIN(4자리 이상)을 입력하세요'); return; }
+  const newBooth = { id: genId(), name, type, pin, totalCoins: 0, visitors: 0 };
+  const booths = DB.booths;
+  booths.push(newBooth);
+  DB.booths = booths;
+  notionCreateBooth(newBooth);
+  document.getElementById('admin-booth-name').value = '';
+  document.getElementById('admin-booth-pin').value = '';
+  showToast(`✅ 부스 "${name}" 등록 완료!`);
+}
+
+// 부스별 색상 팔레트 (최대 12개 부스 구분)
+const BOOTH_PALETTE = [
+  { bg: '#6C63FF', text: '#fff' }, // 보라
+  { bg: '#FF6584', text: '#fff' }, // 핑크
+  { bg: '#26de81', text: '#fff' }, // 초록
+  { bg: '#F7B731', text: '#fff' }, // 골드
+  { bg: '#FC5C65', text: '#fff' }, // 레드
+  { bg: '#45AAF2', text: '#fff' }, // 하늘
+  { bg: '#FD9644', text: '#fff' }, // 오렌지
+  { bg: '#A55EEA', text: '#fff' }, // 연보라
+  { bg: '#2BCBBA', text: '#fff' }, // 민트
+  { bg: '#EB3B5A', text: '#fff' }, // 진핑크
+  { bg: '#3867D6', text: '#fff' }, // 파랑
+  { bg: '#8854D0', text: '#fff' }, // 진보라
+];
+function getBoothColors() {
+  const map = {};
+  DB.booths.forEach((b, i) => {
+    map[b.id] = BOOTH_PALETTE[i % BOOTH_PALETTE.length];
+  });
+  return map;
+}
+
+// 부스 편집
+// 참가자 편집
+function openUserEdit(uid) {
+  const u = DB.users.find(x => x.id === uid);
+  if (!u) return;
+  document.getElementById('edit-user-id').value = u.id;
+  document.getElementById('edit-user-name').value = u.name;
+  document.getElementById('edit-user-team').value = u.team;
+  document.getElementById('edit-user-coins').value = u.coins;
+  document.getElementById('edit-user-stamps').value = u.stamps || 0;
+  document.getElementById('modal-user-edit').classList.add('open');
+}
+
+function saveUserEdit() {
+  const uid    = document.getElementById('edit-user-id').value;
+  const name   = document.getElementById('edit-user-name').value.trim();
+  const team   = document.getElementById('edit-user-team').value.trim();
+  const coins  = parseInt(document.getElementById('edit-user-coins').value);
+  const stamps = parseInt(document.getElementById('edit-user-stamps').value);
+  if (!name || !team || isNaN(coins) || isNaN(stamps)) { showToast('모든 항목을 입력하세요'); return; }
+  const users = DB.users;
+  const i = users.findIndex(x => x.id === uid);
+  if (i === -1) return;
+  users[i] = { ...users[i], name, team, coins, stamps };
+  DB.users = users;
+  proxyCall('updateUser', { pageId: uid, props: { Name: name, Team: team, Coins: coins, Stamps: stamps } });
+  closeModal('modal-user-edit');
+  showToast(`✅ ${name}님 정보 수정 완료!`);
+  renderAdminPeople();
+}
+
+function deleteUser() {
+  const uid = document.getElementById('edit-user-id').value;
+  const u = DB.users.find(x => x.id === uid);
+  if (!confirm(`"${u?.name}"님을 삭제할까요?`)) return;
+  DB.users = DB.users.filter(x => x.id !== uid);
+  proxyCall('deletePage', { pageId: uid });
+  closeModal('modal-user-edit');
+  showToast('🗑️ 참가자 삭제 완료');
+  renderAdminPeople();
+}
+
+function openBoothEdit(bid) {
+  const b = DB.booths.find(x => x.id === bid);
+  if (!b) return;
+  document.getElementById('edit-booth-id').value = b.id;
+  document.getElementById('edit-booth-name').value = b.name;
+  document.getElementById('edit-booth-type').value = b.type;
+  document.getElementById('edit-booth-pin').value = b.pin;
+  document.getElementById('modal-booth-edit').classList.add('open');
+}
+
+function saveBoothEdit() {
+  const bid  = document.getElementById('edit-booth-id').value;
+  const name = document.getElementById('edit-booth-name').value.trim();
+  const type = document.getElementById('edit-booth-type').value;
+  const pin  = document.getElementById('edit-booth-pin').value.trim();
+  if (!name || !pin || pin.length < 4) { showToast('이름과 PIN(4자리 이상)을 확인하세요'); return; }
+  const booths = DB.booths;
+  const i = booths.findIndex(x => x.id === bid);
+  if (i === -1) return;
+  booths[i] = { ...booths[i], name, type, pin };
+  DB.booths = booths;
+  proxyCall('updateBooth', { pageId: bid, props: { Name: name, Type: type, PIN: pin } });
+  closeModal('modal-booth-edit');
+  showToast(`✅ "${name}" 부스 수정 완료!`);
+  renderAdminBooth();
+}
+
+function deleteBooth() {
+  const bid = document.getElementById('edit-booth-id').value;
+  const b = DB.booths.find(x => x.id === bid);
+  if (!confirm(`"${b?.name}" 부스를 삭제할까요?`)) return;
+  DB.booths = DB.booths.filter(x => x.id !== bid);
+  proxyCall('deletePage', { pageId: bid });
+  closeModal('modal-booth-edit');
+  showToast('🗑️ 부스 삭제 완료');
+  renderAdminBooth();
+}
+
+function adminResetAll() {
+  if (!confirm('⚠️ 모든 데이터가 삭제됩니다. 정말 초기화할까요?')) return;
+  localStorage.removeItem('fc_users');
+  localStorage.removeItem('fc_booths');
+  localStorage.removeItem('fc_history');
+  showToast('초기화 완료');
+  renderAdminPage();
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+//  AUTO REFRESH — 30초마다 Notion 동기화 후 화면 갱신
+// ============================================================
+async function autoRefresh() {
+  await syncFromNotion();
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const id = active.id;
+  if (id === 'page-user')  renderUserPage();
+  if (id === 'page-booth') renderBoothPage();
+  if (id === 'page-admin') renderAdminPage();
+}
+
+// 앱 시작 시 Notion에서 최신 데이터 로드
+syncFromNotion().then(() => {
+  const active = document.querySelector('.page.active');
+  if (active?.id === 'page-landing') return; // 랜딩이면 skip
+});
+
+setInterval(autoRefresh, 30000);
+</script>
+</body>
+</html>
